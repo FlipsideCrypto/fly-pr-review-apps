@@ -23,3 +23,8 @@ inputs:
   update:
     description: Whether new commits to the PR should re-deploy the Fly app
     default: true
+  secrets:
+    description: Secrets to be set on the app. Separate multiple secrets with a space.
+  config:
+    description: Optional path to a custom Fly toml config. Config path should be relative to path parameter, if specified.
+ 

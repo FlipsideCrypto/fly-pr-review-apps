@@ -13,15 +13,29 @@ if [ -z "$PR_NUMBER" ]; then
   exit 1
 fi
 
-REPO_OWNER=$(jq -r .event.base.repo.owner /github/workflow/event.json)
-REPO_NAME=$(jq -r .event.base.repo.name /github/workflow/event.json)
+KEYS=$(jq 'keys')
+SENDER=$(jq -r .sender.name /github/workflow/event.json)
+REPO_NAME=$(jq -r .repository.name /github/workflow/event.json)
 EVENT_TYPE=$(jq -r .action /github/workflow/event.json)
+
+echo "KEYS: $KEYS"
+echo "PR_NUMBER: $PR_NUMBER"
+echo "REPO_OWNER: $REPO_OWNER"
+echo "REPO_NAME: $SENDER"
+echo "EVENT_TYPE: $EVENT_TYPE"
+
+EVENT_JSON=$(jq -r . /github/workfloww/event.json)
 
 # Default the Fly app name to pr-{number}-{repo_owner}-{repo_name}
 app="${INPUT_NAME:-pr-$PR_NUMBER-$REPO_OWNER-$REPO_NAME}"
 region="${INPUT_REGION:-${FLY_REGION:-iad}}"
 org="${INPUT_ORG:-${FLY_ORG:-personal}}"
 image="$INPUT_IMAGE"
+
+echo "$app"
+echo "$region"
+echo "$org"
+echo "$image"
 
 if ! echo "$app" | grep "$PR_NUMBER"; then
   echo "For safety, this action requires the app's name to contain the PR number."
@@ -33,6 +47,8 @@ if [ "$EVENT_TYPE" = "closed" ]; then
   flyctl apps destroy "$app" -y || true
   exit 0
 fi
+
+exit 0
 
 # Deploy the Fly app, creating it first if needed.
 if ! flyctl status --app "$app"; then

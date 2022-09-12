@@ -15,6 +15,7 @@ EVENT_TYPE=$(jq -r .action /github/workflow/event.json)
 
 # Default the Fly app name to pr-{repo}-{title}-{number}-{user}
 app="${INPUT_NAME:-pr-$REPO_NAME-$PR_TITLE-$PR_NUMBER-$USER}"
+app="$(tr [A-Z] [a-z] <<< "$app")" # lowercase
 region="${INPUT_REGION:-${FLY_REGION:-iad}}"
 org="${INPUT_ORG:-${FLY_ORG:-personal}}"
 image="$INPUT_IMAGE"
@@ -44,11 +45,13 @@ if [ -n "$INPUT_POSTGRES" ]; then
   flyctl postgres attach "$INPUT_POSTGRES" --app "$app" --database-name "$app"-db || true
 fi
 
+# Set up secrets
 if [ -n "$INPUT_SECRETS" ]; then
   echo "Setting secrets."
   echo $INPUT_SECRETS | tr " " "\n" | flyctl secrets import --app "$app"
 fi
 
+# Deploy the app
 if [ "$INPUT_UPDATE" != "false" ]; then
   echo "Deploying the app."
   flyctl deploy --config "$INPUT_CONFIG" --app "$app" --region "$region" --strategy immediate --image "$image" --remote-only

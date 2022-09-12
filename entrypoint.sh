@@ -15,7 +15,7 @@ EVENT_TYPE=$(jq -r .action /github/workflow/event.json)
 
 # Default the Fly app name to pr-{repo}-{title}-{number}-{user}
 app="${INPUT_NAME:-pr-$REPO_NAME-$PR_TITLE-$PR_NUMBER-$USER}"
-app="$(tr [A-Z] [a-z] <<< "$app")" # lowercase
+app=$(echo $app | tr '[:upper:]' '[:lower:]')
 region="${INPUT_REGION:-${FLY_REGION:-iad}}"
 org="${INPUT_ORG:-${FLY_ORG:-personal}}"
 image="$INPUT_IMAGE"
